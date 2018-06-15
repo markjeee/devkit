@@ -1,0 +1,5 @@
+require_relative '../config/boboot'
+Boboot.require_boot!
+
+require_relative 'postgres'
+DevkitTask::Postgres.new.define!

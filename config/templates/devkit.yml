@@ -7,3 +7,12 @@ mariadb:
     var: $devkit_root/var/mariadb
     listen:
       - 127.0.0.1:3306
+
+postgres:
+  docker:
+    remote_repo: postgres
+  docker_run:
+    opts: ''
+    var: $devkit_root/var/postgres
+    listen:
+      - 127.0.0.1:5432

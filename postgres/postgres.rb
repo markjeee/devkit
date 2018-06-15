@@ -3,16 +3,16 @@ require 'rake/task'
 require 'rake/tasklib'
 require 'docker_task'
 
-class DevkitTask::MariaDB < Rake::TaskLib
-  MARIADB_EXPOSED_PORT = 3306
-  MARIADB_EXPOSED_VOLUME = '/var/lib/mysql'
+class DevkitTask::Postgres < Rake::TaskLib
+  POSTGRES_EXPOSED_PORT = 5432
+  POSTGRES_EXPOSED_VOLUME = '/var/lib/postgresql/data'
 
   DEFAULT_OPTIONS = {
-    :namespace => :mariadb
+    :namespace => :postgres
   }
 
   def self.config
-    config = Devkit.config['mariadb']
+    config = Devkit.config['postgres']
   end
 
   def config; self.class.config; end
@@ -27,19 +27,18 @@ class DevkitTask::MariaDB < Rake::TaskLib
       root_password = nil
 
       unless run_opts.nil? || run_opts.empty?
-        mariadb_var_path = Devkit.config.finalize_paths(run_opts['var'])
-        opts << '-v %s:%s' % [ mariadb_var_path, MARIADB_EXPOSED_VOLUME ]
+        var_path = Devkit.config.finalize_paths(run_opts['var'])
+        opts << '-v %s:%s' % [ var_path, POSTGRES_EXPOSED_VOLUME ]
 
-        opts.concat(DockerTask::Helper.format_port_maps(MARIADB_EXPOSED_PORT, run_opts))
+        opts.concat(DockerTask::Helper.format_port_maps(POSTGRES_EXPOSED_PORT, run_opts))
 
         root_password = run_opts['root_password']
       end
 
       if root_password.nil? || root_password.empty?
-        envs['MYSQL_ROOT_PASSWORD'] = ''
-        envs['MYSQL_ALLOW_EMPTY_PASSWORD'] = '1'
+        envs['POSTGRES_PASSWORD'] = ''
       else
-        envs['MYSQL_ROOT_PASSWORD'] = root_password
+        envs['POSTGRES_PASSWORD'] = root_password
       end
 
       opts.concat(DockerTask::Helper.format_env_params(envs))
@@ -69,9 +68,9 @@ class DevkitTask::MariaDB < Rake::TaskLib
       desc 'Perform initial preparation'
       task :prepare do
         run_opts = config['docker_run']
-        mariadb_var_path = Devkit.config.finalize_paths(run_opts['var'])
+        var_path = Devkit.config.finalize_paths(run_opts['var'])
 
-        sh 'mkdir -p %s' % mariadb_var_path
+        sh 'mkdir -p %s' % var_path
       end
     end
   end
