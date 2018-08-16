@@ -6,3 +6,6 @@ DevkitTask::MariaDB.new.define!
 
 require_relative 'postgres/postgres'
 DevkitTask::Postgres.new.define!
+
+require_relative 'nginx/nginx'
+DevkitTask::Nginx.new.define!

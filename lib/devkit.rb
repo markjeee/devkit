@@ -3,6 +3,7 @@ require 'docker_task'
 module Devkit
   autoload :Config, 'devkit/config'
   autoload :Helper, 'devkit/helper'
+  autoload :Task, 'devkit/task'
 
   def self.config
     if defined?(@config)

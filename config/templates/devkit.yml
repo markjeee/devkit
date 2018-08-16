@@ -16,3 +16,12 @@ postgres:
     var: $devkit_root/var/postgres
     listen:
       - 127.0.0.1:5432
+
+nginx:
+  docker:
+    remote_repo: nginx
+  docker_run:
+    opts: ''
+    var: $devkit_root/var/nginx
+    listen:
+      - 127.0.0.1:80

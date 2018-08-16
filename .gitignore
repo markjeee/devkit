@@ -3,3 +3,4 @@
 config/devkit.yml
 var/mariadb
 /var/postgres
+/var/nginx
