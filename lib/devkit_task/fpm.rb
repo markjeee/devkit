@@ -10,19 +10,19 @@ class DevkitTask::Fpm < Rake::TaskLib
   include Devkit::Task
 
   set_namespace :fpm
-  set_exposed_port 9000
-  set_exposed_volume '/fpm'
+  set_default_options :exposed_port => 9000,
+                      :exposed_volume => '/fpm'
 
   EXPOSED_FPM_VHOSTS = '/vhosts'
 
-  def self.docker_run(task, opts)
+  def configure_run_opts(drun, run_opts)
     vhosts_path = File.join(var_path, 'vhosts')
 
     foreach_vhost(vhosts_path) do |vhost_name, original_path, vhost_link|
-      opts = configure_volume_opts(original_path, opts, File.join(EXPOSED_FPM_VHOSTS, vhost_name))
+      run_opts = drun.configure_volume_opts(original_path, run_opts, File.join(EXPOSED_FPM_VHOSTS, vhost_name))
     end
 
-    super(task, opts)
+    super(drun, run_opts)
   end
 
   def perform_prepare

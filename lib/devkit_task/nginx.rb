@@ -12,8 +12,8 @@ class DevkitTask::Nginx < Rake::TaskLib
   include Devkit::Task
 
   set_namespace :nginx
-  set_exposed_port 80
-  set_exposed_volume '/nginx'
+  set_default_options :exposed_port => 80,
+                      :exposed_volume => '/nginx'
 
   EXPOSED_NGINX_CONF = '/etc/nginx/nginx.conf'
   EXPOSED_NGINX_VHOSTS = '/vhosts'
@@ -21,16 +21,16 @@ class DevkitTask::Nginx < Rake::TaskLib
   TEMPLATE_NGINX_CONF = File.join(DEVKIT_ROOT_PATH, 'nginx/nginx.conf')
   TEMPLATE_SITE_NGINX_CONF = File.join(DEVKIT_ROOT_PATH, 'nginx/site.nginx.conf')
 
-  def self.docker_run(task, opts)
+  def configure_run_opts(drun, run_opts)
     vhosts_path = File.join(var_path, 'vhosts')
 
     foreach_vhost(vhosts_path) do |vhost_name, original_path, vhost_link|
-      opts = configure_volume_opts(original_path, opts, File.join(EXPOSED_NGINX_VHOSTS, vhost_name))
+      run_opts = drun.configure_volume_opts(original_path, run_opts, File.join(EXPOSED_NGINX_VHOSTS, vhost_name))
     end
 
-    opts = configure_volume_opts(TEMPLATE_NGINX_CONF, opts, EXPOSED_NGINX_CONF)
+    run_opts = drun.configure_volume_opts(TEMPLATE_NGINX_CONF, run_opts, EXPOSED_NGINX_CONF)
 
-    super(task, opts)
+    super(drun, run_opts)
   end
 
   def perform_prepare
@@ -45,7 +45,7 @@ class DevkitTask::Nginx < Rake::TaskLib
     nginx_conf = File.join(var_path, File.basename(TEMPLATE_NGINX_CONF))
     sh 'cp %s %s' % [ TEMPLATE_NGINX_CONF, nginx_conf ]
 
-    self.class.foreach_vhost(vhosts_path) do |vhost_name, original_path, vhost_link|
+    foreach_vhost(vhosts_path) do |vhost_name, original_path, vhost_link|
       conf_opts = {
         vhost_path: File.join(EXPOSED_NGINX_VHOSTS, vhost_name),
         server_name: vhost_name,

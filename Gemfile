@@ -9,5 +9,5 @@ gem 'dotenv'
 
 source 'https://repo.nlevel.io/ruby/' do
   gem 'cableguy', '~> 0.5'
-  gem 'docker_task', '~> 0.1'
+  gem 'docker_task', '0.1.5.alpha.2.gfb5523c'
 end

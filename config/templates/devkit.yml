@@ -33,8 +33,8 @@ nginx:
 
 fpm:
   docker:
-    remote_repo: php
-    pull_tag: 5-fpm
+    remote_repo: nlevel/php
+    pull_tag: 5-fpm-mcrypt
     image_name: devkit.fpm
   docker_run:
     opts: ''
