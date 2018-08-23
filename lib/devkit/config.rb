@@ -43,36 +43,25 @@ module Devkit
     end
 
     def self.simplify_keys(v, to = :string)
-      case v
-      when Hash
-        v.inject({ }) do |h, (k, v)|
-          new_v = simplify_keys(v, to)
-
-          case k
-          when String
-            h[k] = new_v if to == :string
-          when Symbol
-            h[k] = new_v if to == :symbol
-          else
-            h[k] = new_v
-          end
-
-          h
-        end
-      when Array
-        v.collect { |va| simplify_keys(va, to) }
-      else
-        v
-      end
+      Devkit::Helper.simplify_keys(v, to)
     end
 
     def simplify_keys(v); self.class.simplify_keys(v); end
     def symbolize_keys(v); self.class.symbolize_keys(v); end
 
     def finalize_paths(path)
-      path = path.gsub(/\$devkit_root/, DEVKIT_ROOT_PATH)
+      path = path.gsub(/\$devkit_root/, devkit_root_path)
+      path = path.gsub(/\$devkit_working/, devkit_working_path)
 
       File.expand_path(path)
+    end
+
+    def devkit_working_path
+      self[:devkit_working] || DEVKIT_ROOT_PATH
+    end
+
+    def devkit_root_path
+      self[:devkit_root] || DEVKIT_ROOT_PATH
     end
 
     def deep_merge(other)

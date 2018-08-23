@@ -1,6 +1,22 @@
+require 'docker_task'
+
 module Devkit
   module Task
     module ClassMethods
+      def foreach_vhost(vhosts_path)
+        Dir.glob('%s/*' % vhosts_path).each do |vhost_link|
+          vhost_name = File.basename(vhost_link)
+
+          if File.symlink?(vhost_link)
+            original_path = File.readlink(vhost_link)
+          else
+            original_path = vhost_link
+          end
+
+          yield(vhost_name, original_path, vhost_link)
+        end
+      end
+
       def configure_volume_opts(run_opts, opts, exp_vol = nil)
         unless run_opts.nil? || run_opts.empty? || exp_vol.nil?
 
@@ -49,6 +65,23 @@ module Devkit
 
       def set_namespace(ns)
         @namespace = ns
+        set_config_name(ns)
+      end
+
+      def set_exposed_volume(vol)
+        @exposed_volume = vol
+      end
+
+      def set_exposed_port(port)
+        @exposed_port = port
+      end
+
+      def envs
+        if defined?(@envs)
+          @envs
+        else
+          @envs = { }
+        end
       end
 
       def set_default_options(opts = { })
@@ -70,8 +103,45 @@ module Devkit
       end
 
       def var_path
-        run_opts = config['docker_run']
-        var_path = Devkit.config.finalize_paths(run_opts['var'])
+        var_path = Devkit.config.finalize_paths(docker_run_config['var'])
+      end
+
+      def docker_run_config
+        Devkit::Helper.symbolize_keys(config['docker_run'])
+      end
+
+      def docker_config
+        Devkit::Helper.symbolize_keys(config['docker'])
+      end
+
+      def configure
+        docker_opts = docker_config
+        docker_opts[:run] = self.method(:docker_run)
+        docker_opts
+      end
+
+      def docker_run(task, opts)
+        run_opts = docker_run_config
+
+        if defined?(@exposed_volume) && !@exposed_volume.nil?
+          opts = configure_volume_opts(run_opts, opts, @exposed_volume)
+        end
+
+        if defined?(@exposed_port) && !@exposed_port.nil?
+          opts = configure_port_opts(run_opts, opts, @exposed_port)
+        end
+
+        if defined?(@envs) && !@envs.nil? && !@envs.empty?
+          opts = configure_envs(run_opts, opts, @envs)
+        end
+
+        opts = configure_exec_opts(run_opts, opts)
+
+        opts
+      end
+
+      def create!(opts = { }, &block)
+        new(opts, &block).define!
       end
     end
 
@@ -82,6 +152,7 @@ module Devkit
     def get_namespace; self.class.get_namespace; end
     def config; self.class.config; end
     def var_path; self.class.var_path; end
+    def docker_config; self.docker_config; end
 
     def initialize(options = { })
       options = DockerTask::Helper.symbolize_keys(options)
@@ -102,7 +173,11 @@ module Devkit
     end
 
     def perform_prepare
-      sh 'mkdir -p %s' % var_path
+      unless var_path.nil?
+        sh 'mkdir -p %s' % var_path
+      end
+
+      self
     end
 
     def define_docker_task!

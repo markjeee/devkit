@@ -6,7 +6,7 @@ GEM
       sequel
       sqlite3
       thor
-    docker_task (0.1.3)
+    docker_task (0.1.4)
       rake
     dotenv (2.5.0)
     rake (12.3.1)

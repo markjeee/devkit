@@ -1,27 +1,43 @@
-
 mariadb:
   docker:
     remote_repo: mariadb
+    pull_tag: latest
+    image_name: devkit.mariadb
   docker_run:
     opts: '--character-set-server=utf8 --collation-server=utf8_unicode_ci'
-    var: $devkit_root/var/mariadb
+    var: $devkit_working/var/mariadb
     listen:
       - 127.0.0.1:3306
 
 postgres:
   docker:
     remote_repo: postgres
+    pull_tag: latest
+    image_name: devkit.postgres
   docker_run:
     opts: ''
-    var: $devkit_root/var/postgres
+    var: $devkit_working/var/postgres
     listen:
       - 127.0.0.1:5432
 
 nginx:
   docker:
     remote_repo: nginx
+    pull_tag: stable
+    image_name: devkit.nginx
   docker_run:
     opts: ''
-    var: $devkit_root/var/nginx
+    var: $devkit_working/var/nginx
     listen:
       - 127.0.0.1:80
+
+fpm:
+  docker:
+    remote_repo: php
+    pull_tag: 5-fpm
+    image_name: devkit.fpm
+  docker_run:
+    opts: ''
+    var: $devkit_working/var/fpm
+    listen:
+      - 127.0.0.1:9000
